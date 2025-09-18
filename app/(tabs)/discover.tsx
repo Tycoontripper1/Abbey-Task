@@ -16,6 +16,7 @@ import {
 export default function Discover() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [connections, setConnections] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [connectionStatuses, setConnectionStatuses] = useState<{
@@ -39,6 +40,7 @@ export default function Discover() {
       setUsers(otherUsers);
 
       // Load connection statuses
+      const userConnections = await ConnectionService.getConnections(user.id);
       const statuses: { [key: string]: string } = {};
       for (const otherUser of otherUsers) {
         const status = await ConnectionService.getConnectionStatus(
@@ -48,6 +50,7 @@ export default function Discover() {
         statuses[otherUser.id] = status;
       }
       setConnectionStatuses(statuses);
+      setConnections(userConnections);
     }
   };
 
@@ -178,7 +181,7 @@ export default function Discover() {
                       <View style={styles.statItem}>
                         <Users color="#6B7280" size={14} />
                         <Text style={styles.statText}>
-                          {user.connectionsCount} connections
+                          {connections?.length} connections
                         </Text>
                       </View>
                     </View>

@@ -44,7 +44,7 @@ export class ConnectionService {
     try {
       const requests = await this.getAllRequests();
       return requests.filter(
-        (r) => r.fromUserId === userId && r.status === "pending"
+        (r) => r.fromUserId === userId && r.status === "sent"
       );
     } catch (error) {
       return [];

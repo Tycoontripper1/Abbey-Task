@@ -45,6 +45,7 @@ export default function Connections() {
       const userConnections = await ConnectionService.getConnections(user.id);
       const pending = await ConnectionService.getPendingRequests(user.id);
       const sent = await ConnectionService.getSentRequests(user.id);
+      console.log(sent);
       const allUsers = await AuthService.getAllUsers();
 
       // Add user data to requests
@@ -173,7 +174,7 @@ export default function Connections() {
                   <View style={styles.statItem}>
                     <Users color="#6B7280" size={14} />
                     <Text style={styles.statText}>
-                      {connection.connectionsCount} connections
+                      {connections?.length} connections
                     </Text>
                   </View>
                 </View>
@@ -210,13 +211,18 @@ export default function Connections() {
             <View style={styles.requestInfo}>
               <View style={styles.requestAvatar}>
                 <Text style={styles.requestAvatarText}>
-                  {request.fromUserId.charAt(0).toUpperCase()}
+                  {request.fromUser
+                    ? request.fromUser.name.charAt(0).toUpperCase()
+                    : "?"}
                 </Text>
               </View>
               <View style={styles.requestDetails}>
                 <Text style={styles.requestName}>Connection Request</Text>
                 <Text style={styles.requestUsername}>
-                  From user {request.fromUserId}
+                  From{" "}
+                  {request.fromUser
+                    ? request.fromUser.username
+                    : "Unknown User"}
                 </Text>
                 <Text style={styles.requestTime}>
                   {new Date(request.createdAt).toLocaleDateString()}
@@ -263,13 +269,18 @@ export default function Connections() {
             <View style={styles.requestInfo}>
               <View style={styles.requestAvatar}>
                 <Text style={styles.requestAvatarText}>
-                  {request.toUserId.charAt(0).toUpperCase()}
+                  {request.fromUser
+                    ? request.fromUser.name.charAt(0).toUpperCase()
+                    : "?"}
                 </Text>
               </View>
               <View style={styles.requestDetails}>
                 <Text style={styles.requestName}>Request Sent</Text>
                 <Text style={styles.requestUsername}>
-                  To user {request.toUserId}
+                  To{" "}
+                  {request.fromUser
+                    ? request.fromUser.username
+                    : "Unknown User"}
                 </Text>
                 <Text style={styles.requestTime}>
                   {new Date(request.createdAt).toLocaleDateString()}

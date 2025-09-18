@@ -25,4 +25,6 @@ export interface ConnectionRequest {
   toUserId: string;
   status: "pending" | "accepted" | "declined";
   createdAt: string;
+  fromUser?: User;
+  toUser?: User;
 }

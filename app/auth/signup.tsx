@@ -62,7 +62,7 @@ export default function Signup() {
     );
 
     if (user) {
-      router.replace("/(tabs)/index");
+      router.replace("/(tabs)");
     } else {
       Alert.alert("Error", "Account already exists or username is taken");
     }
