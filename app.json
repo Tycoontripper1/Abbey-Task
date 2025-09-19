@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "task",
+    "name": "Abbey-Connect",
     "slug": "task",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.b_laj.task"
     },
     "web": {
       "output": "static",
@@ -43,6 +44,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1e052e74-e2ee-469b-a3b4-c44632786348"
+      }
+    },
+    "owner": "b_laj"
   }
 }

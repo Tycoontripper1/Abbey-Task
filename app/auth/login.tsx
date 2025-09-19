@@ -19,6 +19,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
   const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -29,9 +30,35 @@ export default function Login() {
     }).start();
   }, []);
 
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { email: "", password: "" };
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+      valid = false;
+    } else if (!emailRegex.test(email.trim())) {
+      newErrors.email = "Please enter a valid email address";
+      valid = false;
+    }
+
+    // Password validation
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+      valid = false;
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
+    if (!validateForm()) {
       return;
     }
 
@@ -45,6 +72,10 @@ export default function Login() {
     }
 
     setLoading(false);
+  };
+
+  const clearError = (field: string) => {
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   return (
@@ -64,36 +95,70 @@ export default function Login() {
         </View>
 
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Mail color="#6B7280" size={20} />
-            <TextInput
-              style={styles.input}
-              placeholder="Email address"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+          <View>
+            <View
+              style={[styles.inputContainer, errors.email && styles.inputError]}
+            >
+              <Mail color={errors.email ? "#EF4444" : "#6B7280"} size={20} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email address"
+                placeholderTextColor="#9CA3AF"
+                value={email}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  clearError("email");
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!loading}
+              />
+            </View>
+            {errors.email ? (
+              <Text style={styles.errorText}>{errors.email}</Text>
+            ) : null}
           </View>
 
-          <View style={styles.inputContainer}>
-            <Lock color="#6B7280" size={20} />
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              placeholder="Password"
-              placeholderTextColor="#9CA3AF"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-            />
-            <Pressable onPress={() => setShowPassword(!showPassword)}>
-              {showPassword ? (
-                <EyeOff color="#6B7280" size={20} />
-              ) : (
-                <Eye color="#6B7280" size={20} />
-              )}
-            </Pressable>
+          <View>
+            <View
+              style={[
+                styles.inputContainer,
+                errors.password && styles.inputError,
+              ]}
+            >
+              <Lock color={errors.password ? "#EF4444" : "#6B7280"} size={20} />
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
+                value={password}
+                onChangeText={(value) => {
+                  setPassword(value);
+                  clearError("password");
+                }}
+                secureTextEntry={!showPassword}
+                editable={!loading}
+              />
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                {showPassword ? (
+                  <EyeOff
+                    color={errors.password ? "#EF4444" : "#6B7280"}
+                    size={20}
+                  />
+                ) : (
+                  <Eye
+                    color={errors.password ? "#EF4444" : "#6B7280"}
+                    size={20}
+                  />
+                )}
+              </Pressable>
+            </View>
+            {errors.password ? (
+              <Text style={styles.errorText}>{errors.password}</Text>
+            ) : null}
           </View>
 
           <Pressable
@@ -101,7 +166,9 @@ export default function Login() {
             onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text style={styles.loginButtonText}>
+              {loading ? "Signing In..." : "Sign In"}
+            </Text>
           </Pressable>
 
           <View style={styles.divider}>
@@ -111,8 +178,12 @@ export default function Login() {
           </View>
 
           <Pressable
-            style={styles.signupButton}
-            onPress={() => router.push("./signup")}
+            style={[
+              styles.signupButton,
+              loading && styles.signupButtonDisabled,
+            ]}
+            onPress={() => !loading && router.push("./signup")}
+            disabled={loading}
           >
             <Text style={styles.signupButtonText}>Create New Account</Text>
           </Pressable>
@@ -120,8 +191,8 @@ export default function Login() {
 
         <View style={styles.demoInfo}>
           <Text style={styles.demoTitle}>Demo Accounts:</Text>
-          <Text style={styles.demoText}>alice@example.com / password</Text>
-          <Text style={styles.demoText}>bob@example.com / password</Text>
+          <Text style={styles.demoText}>alice@example.com / Password@1</Text>
+          <Text style={styles.demoText}>bob@example.com / Password@1</Text>
         </View>
       </Animated.View>
     </LinearGradient>
@@ -163,12 +234,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 4,
     gap: 12,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  inputError: {
+    borderColor: "#EF4444",
   },
   input: {
     flex: 1,
     paddingVertical: 16,
     fontSize: 16,
     color: "#1F2937",
+  },
+  errorText: {
+    color: "#FEE2E2",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 8,
+    fontWeight: "500",
   },
   loginButton: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -206,6 +289,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+  },
+  signupButtonDisabled: {
+    opacity: 0.5,
   },
   signupButtonText: {
     fontSize: 18,
