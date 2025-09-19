@@ -1,10 +1,10 @@
+import Spinner from "@/components/Spinner";
 import { AuthService } from "@/services/AuthService";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Pressable,
@@ -49,6 +49,7 @@ export default function Login() {
 
   return (
     <LinearGradient colors={["#3B82F6", "#8B5CF6"]} style={styles.container}>
+      {loading && <Spinner message="Signing In..." />}
       <Animated.View
         style={[
           styles.content,
@@ -100,11 +101,7 @@ export default function Login() {
             onPress={handleLogin}
             disabled={loading}
           >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.loginButtonText}>Sign In</Text>
-            )}
+            <Text style={styles.loginButtonText}>Sign In</Text>
           </Pressable>
 
           <View style={styles.divider}>

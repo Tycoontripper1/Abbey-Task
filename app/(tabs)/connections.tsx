@@ -269,18 +269,15 @@ export default function Connections() {
             <View style={styles.requestInfo}>
               <View style={styles.requestAvatar}>
                 <Text style={styles.requestAvatarText}>
-                  {request.fromUser
-                    ? request.fromUser.name.charAt(0).toUpperCase()
+                  {request.toUser
+                    ? request?.toUser.name.charAt(0).toUpperCase()
                     : "?"}
                 </Text>
               </View>
               <View style={styles.requestDetails}>
                 <Text style={styles.requestName}>Request Sent</Text>
                 <Text style={styles.requestUsername}>
-                  To{" "}
-                  {request.fromUser
-                    ? request.fromUser.username
-                    : "Unknown User"}
+                  To {request.toUser ? request.toUser.username : "Unknown User"}
                 </Text>
                 <Text style={styles.requestTime}>
                   {new Date(request.createdAt).toLocaleDateString()}

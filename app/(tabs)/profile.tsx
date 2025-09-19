@@ -1,6 +1,10 @@
+// import AnimatedModal from "@/components/AnimatedModal";
+import AnimatedModal from "@/components/AnimatedModal";
 import { AuthService } from "@/services/AuthService";
 import { ConnectionService } from "@/services/ConnectionService";
 import { User } from "@/types/User";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
@@ -24,6 +28,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -31,6 +36,8 @@ export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [connections, setConnections] = useState<User[]>([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const toggleLogoutModal = () => setShowLogoutModal(!showLogoutModal);
   const [editFormData, setEditFormData] = useState({
     name: "",
     username: "",
@@ -82,17 +89,41 @@ export default function Profile() {
   };
 
   const handleLogout = async () => {
-    Alert.alert("Logout", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await AuthService.logout();
-          router.replace("/auth/login");
+    await AuthService.logout();
+    router.replace("/auth/login");
+  };
+
+  const handleFactoryReset = async () => {
+    Alert.alert(
+      "⚠️ Factory Reset",
+      "This will clear ALL app data including your login information and settings. This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await AsyncStorage.clear();
+              Alert.alert(
+                "✅ Reset Complete",
+                "All app data has been cleared. You will be redirected to the login screen.",
+                [{ text: "OK", onPress: () => router.replace("/auth/login") }]
+              );
+            } catch (e) {
+              console.error("Error clearing app data", e);
+              Alert.alert(
+                "❌ Error",
+                "Something went wrong while clearing app data."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const updateEditField = (field: string, value: string) => {
@@ -153,7 +184,11 @@ export default function Profile() {
         </View>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Account Information</Text>
 
@@ -238,15 +273,65 @@ export default function Profile() {
                 </Text>
               </View>
             </Pressable>
+
+            <Pressable style={styles.actionItem} onPress={handleFactoryReset}>
+              <View style={[styles.actionIcon, { backgroundColor: "#FEE2E2" }]}>
+                <MaterialIcons name="delete" size={20} color="#EF4444" />
+              </View>
+              <View style={styles.actionContent}>
+                <Text style={[styles.actionTitle, { color: "#EF4444" }]}>
+                  Factory Reset
+                </Text>
+                <Text style={styles.actionDescription}>
+                  Clear all app data and settings
+                </Text>
+              </View>
+            </Pressable>
           </View>
         </View>
 
         <View style={styles.logoutSection}>
-          <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <Pressable style={styles.logoutButton} onPress={toggleLogoutModal}>
             <LogOut color="#EF4444" size={20} />
             <Text style={styles.logoutButtonText}>Logout</Text>
           </Pressable>
         </View>
+
+        {/* Logout Modal */}
+        <AnimatedModal
+          visible={showLogoutModal}
+          onClose={toggleLogoutModal}
+          animationType="scale"
+          animationDuration={300}
+          backdropOpacity={0.5}
+        >
+          <View>
+            <View style={styles.logoutModalContent}>
+              <View style={styles.logoutModalIcon}>
+                <MaterialIcons name="logout" size={36} color="#e74c3c" />
+              </View>
+              <Text style={styles.logoutModalTitle}>Confirm Logout</Text>
+              <Text style={styles.logoutModalText}>
+                Are you sure you want to log out?
+              </Text>
+
+              <View style={styles.logoutModalButtons}>
+                <TouchableOpacity
+                  onPress={toggleLogoutModal}
+                  style={[styles.logoutModalButton, styles.cancelButton]}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleLogout}
+                  style={[styles.logoutModalButton, styles.logoutButtonModal]}
+                >
+                  <Text style={styles.logoutButtonText}>Log Out</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </AnimatedModal>
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -256,7 +341,7 @@ export default function Profile() {
         presentationStyle="pageSheet"
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={styles.editModalContainer}>
           <View style={styles.modalHeader}>
             <Pressable
               style={styles.modalCloseButton}
@@ -273,7 +358,10 @@ export default function Profile() {
             </Pressable>
           </View>
 
-          <ScrollView style={styles.modalContent}>
+          <ScrollView
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalContent}
+          >
             <View style={styles.modalForm}>
               <View style={styles.modalField}>
                 <Text style={styles.modalFieldLabel}>Name</Text>
@@ -420,6 +508,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    backgroundColor: "#F9FAFB",
+  },
+  contentContainer: {
     padding: 20,
   },
   infoSection: {
@@ -523,9 +614,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#EF4444",
   },
-  modalContainer: {
+
+  // Edit Profile Modal Styles
+  editModalContainer: {
     flex: 1,
-    backgroundColor: "white",
   },
   modalHeader: {
     flexDirection: "row",
@@ -540,17 +632,15 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     padding: 8,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1F2937",
-  },
   modalSaveButton: {
     padding: 8,
   },
-  modalContent: {
+  modalScrollView: {
     flex: 1,
+  },
+  modalContent: {
     padding: 20,
+    gap: 24,
   },
   modalForm: {
     gap: 24,
@@ -576,5 +666,111 @@ const styles = StyleSheet.create({
   modalTextArea: {
     height: 100,
     textAlignVertical: "top",
+  },
+
+  // Logout Modal Styles
+  logoutModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  logoutModalContent: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 24,
+    alignItems: "center",
+  },
+  modalIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#fdecea",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1F2937",
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: "center",
+    color: "#666",
+    lineHeight: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    backgroundColor: "#f5f5f5",
+    marginRight: 12,
+  },
+  logoutButtonModal: {
+    backgroundColor: "#fdecea",
+    marginLeft: 12,
+  },
+  cancelButtonText: {
+    color: "#333",
+    fontWeight: "600",
+  },
+  // logoutModalContainer: {
+  //   flex: 1,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   padding: 24,
+  // },
+  // logoutModalContent: {
+  //   width: "100%",
+  //   backgroundColor: "#fff",
+  //   borderRadius: 24,
+  //   padding: 24,
+  //   alignItems: "center",
+  // },
+  logoutModalIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#fdecea",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  logoutModalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1F2937",
+    marginBottom: 8,
+  },
+  logoutModalText: {
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: "center",
+    color: "#666",
+    lineHeight: 24,
+  },
+  logoutModalButtons: {
+    flexDirection: "row",
+    width: "100%",
+  },
+  logoutModalButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

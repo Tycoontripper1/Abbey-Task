@@ -28,3 +28,24 @@ export interface ConnectionRequest {
   fromUser?: User;
   toUser?: User;
 }
+// Add to your types/User.ts or create a new file types/Post.ts
+export interface Post {
+  id: string;
+  userId: string;
+  user?: User; // Optional user data
+  content: string;
+  imageUrl?: string;
+  likes: string[]; // Array of user IDs who liked the post
+  comments: Comment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  id: string;
+  userId: string;
+  user?: User; // Optional user data
+  postId: string;
+  content: string;
+  createdAt: string;
+}

@@ -1,10 +1,10 @@
+import Spinner from "@/components/Spinner";
 import { AuthService } from "@/services/AuthService";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { AtSign, Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Pressable,
@@ -72,6 +72,7 @@ export default function Signup() {
 
   return (
     <LinearGradient colors={["#8B5CF6", "#EC4899"]} style={styles.container}>
+      {loading && <Spinner message="Creating Account..." />}
       <Animated.View
         style={[
           styles.content,
@@ -151,11 +152,7 @@ export default function Signup() {
             onPress={handleSignup}
             disabled={loading}
           >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.signupButtonText}>Create Account</Text>
-            )}
+            <Text style={styles.signupButtonText}>Create Account</Text>
           </Pressable>
 
           <View style={styles.divider}>

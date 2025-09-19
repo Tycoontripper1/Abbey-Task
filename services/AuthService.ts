@@ -11,7 +11,7 @@ const STORAGE_KEYS = {
 export class AuthService {
   static async login(email: string, password: string): Promise<User | null> {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const users = await this.getAllUsers();
       const user = users.find((u) => u.email === email);
